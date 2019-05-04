@@ -21,7 +21,7 @@ class Trainer:
         self.lr = config.lr
         self.content_weight = config.content_weight
         self.style_weight = config.style_weight
-        self.style_image = config.style_image
+        self.style_image_name = config.style_image_name
         self.style_dir = config.style_dir
         self.batch_size = config.batch_size
 
@@ -80,18 +80,21 @@ class Trainer:
             return
 
         transfer_net = glob(os.path.join(self.checkpoint_dir, f'TransferNet_{self.epoch}.pth'))
-        vgg_net = glob(os.path.join(self.checkpoint_dir, f'VGG_{self.epoch}.pth'))
 
-        if not (transfer_net or vgg_net):
+        if not transfer_net:
             print(f"[!] No checkpoint in epoch {self.epoch}")
             return
 
         self.transfer_net.load_state_dict(torch.load(transfer_net[0]))
-        self.vgg.load_state_dict(torch.load(vgg_net[0]))
 
     def load_feature_style(self):
-        image = load_image(os.path.join(self.style_dir, self.style_image), size=self.image_size)
-        iamge = transforms.Compose([
+        if not os.path.exists(self.style_dir):
+            os.makedirs(self.style_dir)
+        if not os.listdir(os.path.join(self.style_dir, self.style_image_name)):
+            raise Exception(f"[!] No image for style transfer")
+
+        image = load_image(os.path.join(self.style_dir, self.style_image_name), size=self.image_size)
+        image = transforms.Compose([
             transforms.CenterCrop(min(image.size[0], image.size[1])),
             transforms.Resize(self.image_size),
             transforms.ToTensor(),
@@ -101,7 +104,6 @@ class Trainer:
         image = image.to(self.device)
         style_image = self.vgg(image)
         self.gram_style = [gram_matrix(y) for y in style_image]
-        return image
 
     def weights_init(m):
         classname = m.__class__.__name__

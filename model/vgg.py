@@ -1,10 +1,11 @@
 from collections import namedtuple
 
 import torch
+import torch.nn as nn
 from torchvision import models
 
 
-class VGG16(torch.nn.Module):
+class VGG16(nn.Module):
     def __init__(self, requires_grad=False):
         super(VGG16, self).__init__()
         vgg_pretrained_features = models.vgg16(pretrained=True).features
