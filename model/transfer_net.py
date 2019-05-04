@@ -42,6 +42,7 @@ class TransferNet(nn.Module):
 
 class ResidualNetwork(nn.Module):
     def __init__(self, channels):
+        super(ResidualNetwork, self).__init__()
         block = []
         for i in range(2):
             block += [nn.Conv2d(in_channels=channels, out_channels=channels, kernel_size=3, stride=1),
@@ -54,3 +55,4 @@ class ResidualNetwork(nn.Module):
         out = self.model(x)
         out = self.relu(x + out)
         return out
+
